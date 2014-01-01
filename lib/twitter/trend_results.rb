@@ -1,7 +1,6 @@
 require 'twitter/creatable'
 require 'twitter/enumerable'
 require 'memoizable'
-require 'twitter/null_object'
 
 module Twitter
   class TrendResults
@@ -49,7 +48,11 @@ module Twitter
 
     # @return [Twitter::Place, NullObject]
     def location
-      location? ? Place.new(@attrs[:locations].first) : NullObject.new
+      if location?
+        Place.new(@attrs[:locations].first)
+      else
+        null_object
+      end
     end
     memoize :location
 
@@ -58,5 +61,19 @@ module Twitter
       !@attrs[:locations].nil? && !@attrs[:locations].first.nil?
     end
     memoize :location?
+
+  private
+
+    def null_object
+      Naught.build do |config|
+        config.black_hole
+        config.define_explicit_conversions
+        config.define_implicit_conversions
+        config.singleton
+        def nil?
+          true
+        end
+      end.get
+    end
   end
 end

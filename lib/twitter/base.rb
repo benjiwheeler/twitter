@@ -1,7 +1,7 @@
 require 'addressable/uri'
 require 'forwardable'
 require 'memoizable'
-require 'twitter/null_object'
+require 'naught'
 
 module Twitter
   class Base
@@ -89,7 +89,7 @@ module Twitter
             @attrs[key1]
           else
             if @attrs[key1].nil?
-              NullObject.new
+              null_object
             else
               attrs = attrs_for_object(key1, key2)
               Twitter.const_get(klass).new(attrs)
@@ -129,6 +129,18 @@ module Twitter
     end
 
   private
+
+    def null_object
+      Naught.build do |config|
+        config.black_hole
+        config.define_explicit_conversions
+        config.define_implicit_conversions
+        config.singleton
+        def nil?
+          true
+        end
+      end.get
+    end
 
     def attrs_for_object(key1, key2 = nil)
       if key2.nil?
